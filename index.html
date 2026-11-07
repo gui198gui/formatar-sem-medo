@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Formatar Sem Medo · Backup de saves, definições e programas antes de formatar o PC</title>
+  <meta name="description" content="Vais formatar o PC? Escolhe os teus jogos e programas e descarrega um backup automático: saves, definições, Wi-Fi e lista de programas para reinstalar tudo de uma vez.">
+  <meta name="theme-color" content="#101418">
+  <link rel="icon" href="icons/icon-192.png" type="image/png">
+  <link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+
+<header class="topbar">
+  <a href="./" class="brand"><img src="icons/icon-192.png" alt="" width="30" height="30"><span>Formatar <b>Sem Medo</b></span></a>
+</header>
+
+<main>
+  <section class="hero">
+    <h1>Vais formatar o PC?<br><span>Não percas nada.</span></h1>
+    <p>Escolhe os teus jogos e programas. Esta página gera um backup automático que guarda os <b>saves</b>,
+       as <b>definições</b>, as <b>redes Wi-Fi</b> e a <b>lista de programas</b>. Depois de formatar, um clique
+       repõe tudo e reinstala os programas de uma vez.</p>
+  </section>
+
+  <nav class="steps" aria-label="Passos">
+    <button class="step active" data-step="1"><span>1</span> Jogos</button>
+    <button class="step" data-step="2"><span>2</span> Programas e pastas</button>
+    <button class="step" data-step="3"><span>3</span> Contas</button>
+    <button class="step" data-step="4"><span>4</span> Descarregar</button>
+  </nav>
+
+  <!-- ============ PASSO 1: JOGOS ============ -->
+  <section class="panel" data-panel="1">
+    <h2>Que jogos tens?</h2>
+    <p class="lead">Procura cada jogo. A localização dos saves vem do <a href="https://www.pcgamingwiki.com" target="_blank" rel="noopener">PCGamingWiki</a>, que tem milhares de jogos.</p>
+
+    <div class="search">
+      <input type="search" id="game-q" placeholder="Ex: Elden Ring, Stardew Valley, Skyrim…" autocomplete="off" aria-label="Procurar jogo">
+      <ul id="game-suggest" class="suggest" hidden></ul>
+    </div>
+    <div class="chips" id="popular"></div>
+
+    <div id="games" class="games"></div>
+    <p class="empty" id="games-empty">Ainda não adicionaste jogos. Se só usas jogos com saves na cloud, podes passar à frente.</p>
+
+    <div class="nav-btns"><span></span><button class="btn primary" data-go="2">Seguinte →</button></div>
+  </section>
+
+  <!-- ============ PASSO 2: PROGRAMAS ============ -->
+  <section class="panel" data-panel="2" hidden>
+    <h2>Programas, definições e pastas</h2>
+
+    <h3>📦 Reinstalar programas</h3>
+    <div class="opts">
+      <label class="opt"><input type="checkbox" data-opt="winget" checked>
+        <span><b>Lista para reinstalar com o winget</b><small>Depois de formatar, reinstala os teus programas todos de uma vez (Steam, Discord, Chrome, VS Code…).</small></span></label>
+      <label class="opt"><input type="checkbox" data-opt="programList" checked>
+        <span><b>Lista completa de programas instalados</b><small>Um ficheiro de texto com tudo o que tinhas, para não te esqueceres de nada.</small></span></label>
+      <label class="opt"><input type="checkbox" data-opt="vscodeExt" checked>
+        <span><b>Extensões do VS Code</b><small>Reinstala as tuas extensões automaticamente.</small></span></label>
+    </div>
+
+    <h3>⚙️ Definições de programas</h3>
+    <div class="opts" id="configs"></div>
+    <p class="note">Discord, Spotify, WhatsApp e afins guardam tudo na conta: basta entrares outra vez.</p>
+
+    <h3>📁 Pastas pessoais</h3>
+    <div class="opts cols" id="folders"></div>
+    <p class="note">⚠️ As pastas podem ser grandes. Confirma que a pen ou o disco externo têm espaço.</p>
+
+    <h3>🔧 Sistema</h3>
+    <div class="opts">
+      <label class="opt"><input type="checkbox" data-opt="wifi" checked>
+        <span><b>Redes Wi-Fi e palavras-passe</b><small>Ficam guardadas em texto na pen. Guarda-a em segurança.</small></span></label>
+      <label class="opt"><input type="checkbox" data-opt="drivers">
+        <span><b>Drivers instalados</b><small>Precisa de executar como administrador. Normalmente é melhor descarregar os mais recentes do fabricante.</small></span></label>
+    </div>
+
+    <div class="nav-btns"><button class="btn" data-go="1">← Voltar</button><button class="btn primary" data-go="3">Seguinte →</button></div>
+  </section>
+
+  <!-- ============ PASSO 3: CONTAS ============ -->
+  <section class="panel" data-panel="3" hidden>
+    <h2>Checklist de contas</h2>
+    <p class="lead">Algumas coisas <b>não se podem copiar</b>, como as palavras-passe guardadas no browser, que o Windows cifra.
+      Confirma tudo antes de formatar, para não ficares fechado fora de nenhuma conta.</p>
+    <div class="progress"><div id="check-bar"></div></div>
+    <p class="note" id="check-count"></p>
+    <div id="checklist"></div>
+    <div class="nav-btns"><button class="btn" data-go="2">← Voltar</button><button class="btn primary" data-go="4">Seguinte →</button></div>
+  </section>
+
+  <!-- ============ PASSO 4: DESCARREGAR ============ -->
+  <section class="panel" data-panel="4" hidden>
+    <h2>O teu kit de backup</h2>
+    <ul class="summary" id="summary"></ul>
+
+    <button class="btn primary big" id="download">⬇ Descarregar kit (ZIP)</button>
+
+    <ol class="howto">
+      <li><b>Extrai o ZIP para uma pen ou disco externo</b>, nunca para o disco que vais formatar.</li>
+      <li>Fecha os jogos e programas e faz duplo clique em <code>FAZER-BACKUP.bat</code>. Fica tudo numa pasta <code>Backup_…</code>.</li>
+      <li>Abre a pasta e confirma que estão lá os teus saves. Revê a <code>CHECKLIST.txt</code>.</li>
+      <li>Formata o PC. 🙂</li>
+      <li>Depois de instalares o Windows, liga a pen e faz duplo clique em <code>RESTAURAR.bat</code>.</li>
+      <li>Instala os jogos e corre o <code>RESTAURAR.bat</code> outra vez, para os saves que dependem da pasta do jogo ou da Steam.</li>
+    </ol>
+
+    <details class="safety">
+      <summary>🔒 O que é que os scripts fazem? (segurança)</summary>
+      <ul>
+        <li>Só <b>copiam</b> ficheiros (com <code>robocopy</code>, sem apagar nada) e exportam definições do registo.</li>
+        <li>Não enviam nada para a internet. O único download é o do <code>winget</code>, quando reinstalas programas.</li>
+        <li>O código é aberto e pode ser lido: <a href="https://github.com/gui198gui/formatar-sem-medo/tree/main/scripts" target="_blank" rel="noopener">ver os scripts no GitHub</a>.</li>
+        <li>O Windows pode mostrar um aviso por o ficheiro vir da internet: <i>Mais informações → Executar mesmo assim</i>.</li>
+      </ul>
+    </details>
+
+    <div class="nav-btns"><button class="btn" data-go="3">← Voltar</button><span></span></div>
+  </section>
+</main>
+
+<div class="toast" id="toast" hidden></div>
+
+<footer>
+  Feito por <a href="https://gui198gui.github.io" target="_blank" rel="noopener">Guilherme Martins</a> ·
+  <a href="https://github.com/gui198gui/formatar-sem-medo" target="_blank" rel="noopener">Código no GitHub</a> ·
+  Dados dos jogos: <a href="https://www.pcgamingwiki.com" target="_blank" rel="noopener">PCGamingWiki</a> (CC BY-NC-SA 3.0)
+</footer>
+
+<script src="vendor/jszip.min.js"></script>
+<script src="js/data.js"></script>
+<script src="js/pcgw.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
