@@ -119,8 +119,12 @@ $HasRobocopy = [bool](Get-Command robocopy -ErrorAction SilentlyContinue)
 function Copy-Folder([string]$src, [string]$dst) {
   New-Item -ItemType Directory -Path $dst -Force | Out-Null
   if ($HasRobocopy) {
-    robocopy "$src" "$dst" /E /COPY:DAT /R:1 /W:1 /XJ /NP /NFL /NDL /NJH /NJS | Out-Null
-    return ($LASTEXITCODE -lt 8)
+    $roboArgs = @("$src", "$dst", '/E', '/COPY:DAT', '/R:1', '/W:1', '/XJ', '/NP', '/NFL', '/NDL')
+    if ($script:RoboLog) { $roboArgs += "/LOG+:$($script:RoboLog)" }
+    robocopy @roboArgs | Out-Null
+    $code = $LASTEXITCODE
+    if ($code -ge 8 -and $script:RoboLog) { Write-Host "    Detalhes do erro em: $($script:RoboLog)" -ForegroundColor Yellow }
+    return ($code -lt 8)
   }
   try { Copy-Item -Path (Join-Path $src '*') -Destination $dst -Recurse -Force -ErrorAction Stop; return $true } catch { return $false }
 }

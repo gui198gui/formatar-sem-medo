@@ -43,6 +43,7 @@ $Stamp = Get-Date -Format 'yyyy-MM-dd_HH-mm'
 $Dest = Join-Path $Root ("Backup_{0}_{1}" -f $env:COMPUTERNAME, $Stamp)
 New-Item -ItemType Directory -Path $Dest -Force | Out-Null
 try { Start-Transcript -Path (Join-Path $Dest 'backup-log.txt') -Force | Out-Null } catch {}
+$script:RoboLog = Join-Path $Dest 'robocopy-log.txt'
 
 Write-Host ""
 Write-Host "  FORMATAR SEM MEDO - Backup" -ForegroundColor White
@@ -138,7 +139,7 @@ function Backup-Pattern([string]$group, [string]$label, [string]$pattern, $appid
         if (Copy-Folder $it.FullName (Join-Path $Dest $slot)) {
           [void]$script:Manifest.Add([pscustomobject]@{ group = $group; label = $label; type = 'dir'; root = $portable.root; rel = $portable.rel; backup = $slot; appid = $appid })
           $copied++
-        } else { Write-Warn2 "Falhou a copia de $($it.FullName)" }
+        } else { Write-Warn2 "Falhou a copia de $($it.FullName) (OneDrive desligado? pen cheia? ficheiro > 4 GB numa pen FAT32? ver robocopy-log.txt)" }
       } else {
         if (Copy-OneFile $it.FullName (Join-Path $Dest $slot)) {
           [void]$script:Manifest.Add([pscustomobject]@{ group = $group; label = $label; type = 'file'; root = $portable.root; rel = $portable.rel; backup = (Join-Path $slot $it.Name); appid = $appid })
@@ -202,7 +203,8 @@ if ($Config.customFolders -and $Config.customFolders.Count -gt 0) {
   Write-Step "Outras pastas (pode demorar)"
   foreach ($cf in $Config.customFolders) {
     $n = Backup-Pattern 'outras-pastas' $cf.name $cf.pattern $null
-    if ($n -gt 0) { Write-Ok $cf.name } else { Write-Warn2 "Pasta nao encontrada: $($cf.pattern.TrimEnd('\'))" }
+    if ($n -gt 0) { Write-Ok $cf.name }
+    elseif (-not (Test-Path -LiteralPath ($cf.pattern.TrimEnd('\')))) { Write-Warn2 "Pasta nao encontrada: $($cf.pattern.TrimEnd('\'))" }
   }
 }
 
