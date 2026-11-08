@@ -69,6 +69,15 @@
     <div class="opts cols" id="folders"></div>
     <p class="note">⚠️ As pastas podem ser grandes. Confirma que a pen ou o disco externo têm espaço.</p>
 
+    <h3>📂 Outras pastas</h3>
+    <p class="note" style="margin-top:0">Pastas fora das habituais, como projetos ou mods. Para copiar o caminho: abre a pasta no Explorador,
+      clica na barra de endereço e faz <kbd>Ctrl</kbd>+<kbd>C</kbd>.</p>
+    <form class="add-folder" id="custom-form">
+      <input type="text" id="custom-path" placeholder="Ex: C:\Projetos  ou  %USERPROFILE%\Mods" autocomplete="off" aria-label="Caminho da pasta">
+      <button class="btn" type="submit">Adicionar</button>
+    </form>
+    <ul class="custom-list" id="custom-list"></ul>
+
     <h3>🔧 Sistema</h3>
     <div class="opts">
       <label class="opt"><input type="checkbox" data-opt="wifi" checked>

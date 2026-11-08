@@ -113,6 +113,7 @@ function Resolve-Target($item) {
 
 $groups = [ordered]@{
   'pastas'               = 'Pastas pessoais'
+  'outras-pastas'        = 'Outras pastas'
   'programas-definicoes' = 'Definicoes de programas'
   'jogos-definicoes'     = 'Definicoes de jogos'
   'jogos-saves'          = 'Saves de jogos'

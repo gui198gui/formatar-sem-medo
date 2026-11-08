@@ -128,3 +128,12 @@ main { flex: 1; width: 100%; max-width: 900px; margin: 0 auto; padding: 1rem cla
 }
 footer { text-align: center; color: var(--muted); font-size: .82rem; padding: 1.4rem; border-top: 1px solid var(--border); }
 footer a { color: var(--muted); }
+
+/* Outras pastas */
+.add-folder { display: flex; gap: .5rem; margin-top: .4rem; }
+.add-folder input { flex: 1; font: inherit; font-family: ui-monospace, Consolas, monospace; font-size: .9rem; padding: .65rem .8rem; border-radius: 10px; border: 1px solid var(--border); background: var(--bg); color: var(--text); }
+.add-folder input:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
+.custom-list { list-style: none; display: grid; gap: .4rem; margin-top: .6rem; }
+.custom-list li { display: flex; align-items: center; gap: .6rem; padding: .5rem .5rem .5rem .8rem; background: var(--bg); border: 1px solid var(--border); border-radius: 10px; }
+.custom-list code { flex: 1; background: none; padding: 0; }
+kbd { font-family: ui-monospace, Consolas, monospace; font-size: .78rem; padding: .05rem .35rem; border: 1px solid var(--border); border-bottom-width: 2px; border-radius: 5px; background: var(--surface-2); color: var(--text); }

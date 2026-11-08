@@ -196,6 +196,17 @@ if ($Config.folders -and $Config.folders.Count -gt 0) {
 }
 
 # --------------------------------------------------------------------------
+# 3b. Outras pastas escolhidas pelo utilizador
+# --------------------------------------------------------------------------
+if ($Config.customFolders -and $Config.customFolders.Count -gt 0) {
+  Write-Step "Outras pastas (pode demorar)"
+  foreach ($cf in $Config.customFolders) {
+    $n = Backup-Pattern 'outras-pastas' $cf.name $cf.pattern $null
+    if ($n -gt 0) { Write-Ok $cf.name } else { Write-Warn2 "Pasta nao encontrada: $($cf.pattern.TrimEnd('\'))" }
+  }
+}
+
+# --------------------------------------------------------------------------
 # 4. Programas instalados
 # --------------------------------------------------------------------------
 $progDir = Join-Path $Dest 'programas'

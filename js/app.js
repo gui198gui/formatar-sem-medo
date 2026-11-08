@@ -15,7 +15,9 @@
     configs: Object.fromEntries(D.configs.map((c) => [c.id, c.checked])),
     folders: Object.fromEntries(D.folders.map((f) => [f.id, f.checked])),
     checks: {},
+    custom: [],
   };
+  if (!Array.isArray(state.custom)) state.custom = [];
 
   function load() {
     try { return JSON.parse(localStorage.getItem(STORE)); } catch { return null; }
@@ -180,6 +182,55 @@
     save();
   });
 
+  /* ---------------- Outras pastas ---------------- */
+  const ENV_TOKENS = {
+    "%userprofile%": "<userprofile>", "%appdata%": "<appdata>", "%localappdata%": "<localappdata>",
+    "%programdata%": "<programdata>", "%public%": "<public>", "%programfiles%": "<programfiles>",
+    "%programfiles(x86)%": "<programfilesx86>", "~": "<userprofile>",
+  };
+
+  /** Valida e normaliza um caminho escrito pelo utilizador. Devolve { pattern, display } ou uma mensagem de erro. */
+  function parseFolder(input) {
+    let p = input.trim().replace(/^["']|["']$/g, "").replace(/\//g, "\\").replace(/\\+$/, "");
+    if (!p) return "Escreve o caminho de uma pasta.";
+    if (/^[a-z]:$/i.test(p)) return "Escolhe uma pasta, não o disco inteiro.";
+    const m = p.match(/^(%[a-z()0-9]+%|~)(\\.*)?$/i);
+    if (m) {
+      const tok = ENV_TOKENS[m[1].toLowerCase()];
+      if (!tok) return `Não conheço a variável ${m[1]}.`;
+      return { pattern: tok + (m[2] || "") + "\\", display: p };
+    }
+    if (!/^[a-z]:\\/i.test(p)) return "O caminho deve começar por uma letra de disco (ex: C:\\Projetos) ou por %USERPROFILE%.";
+    if (/^[a-z]:\\?$/i.test(p)) return "Escolhe uma pasta, não o disco inteiro.";
+    if (/^[a-z]:\\(windows|program files( \(x86\))?)(\\|$)/i.test(p)) return "Essa pasta é do sistema e é reinstalada com o Windows: não precisas de a copiar.";
+    if (/[*?"<>|]/.test(p.slice(2))) return "O caminho tem caracteres inválidos.";
+    return { pattern: p + "\\", display: p };
+  }
+
+  function renderCustom() {
+    $("custom-list").innerHTML = state.custom.map((f, i) =>
+      `<li><code>${esc(f.display)}</code><button class="icon-btn" type="button" data-custom-remove="${i}" aria-label="Remover ${esc(f.display)}">✕</button></li>`).join("");
+  }
+
+  $("custom-form").addEventListener("submit", (e) => {
+    e.preventDefault();
+    const input = $("custom-path");
+    const r = parseFolder(input.value);
+    if (typeof r === "string") return toast(r);
+    if (state.custom.some((f) => f.pattern.toLowerCase() === r.pattern.toLowerCase())) return toast("Essa pasta já está na lista.");
+    state.custom.push(r);
+    input.value = "";
+    save();
+    renderCustom();
+  });
+  $("custom-list").addEventListener("click", (e) => {
+    const b = e.target.closest("[data-custom-remove]");
+    if (!b) return;
+    state.custom.splice(Number(b.dataset.customRemove), 1);
+    save();
+    renderCustom();
+  });
+
   /* ---------------- Passo 3: checklist ---------------- */
   const allChecks = D.checklist.flatMap((g) => g.items);
   function renderChecklist() {
@@ -208,6 +259,7 @@
       })),
       configs: D.configs.filter((c) => state.configs[c.id]).map((c) => ({ id: c.id, name: c.name, patterns: c.patterns })),
       folders: D.folders.filter((f) => state.folders[f.id]).map((f) => f.id),
+      customFolders: state.custom.map((f) => ({ name: f.display.split("\\").filter(Boolean).pop() || f.display, pattern: f.pattern })),
       options: { ...state.options },
     };
   }
@@ -221,6 +273,7 @@
       [`🎮 <b>${cfg.games.length}</b> jogo(s) com saves e definições${noData ? ` <small>(${noData} sem dados no wiki)</small>` : ""}`, cfg.games.length > 0],
       [`⚙️ <b>${cfg.configs.length}</b> programa(s) com definições: ${cfg.configs.map((c) => esc(c.name)).join(", ") || "nenhum"}`, cfg.configs.length > 0],
       [`📁 Pastas: ${cfg.folders.map((id) => esc(D.folders.find((f) => f.id === id).name)).join(", ") || "nenhuma"}`, cfg.folders.length > 0],
+      [`📂 Outras pastas: ${state.custom.map((f) => esc(f.display)).join(", ") || "nenhuma"}`, state.custom.length > 0],
       [`📦 Reinstalar programas com winget`, opts.winget],
       [`📶 Redes Wi-Fi`, opts.wifi],
       [`🔧 Drivers`, opts.drivers],
@@ -302,6 +355,7 @@
   renderPopular();
   renderGames();
   renderOptions();
+  renderCustom();
   renderChecklist();
 
   window.__fsm = { state, buildConfig };
