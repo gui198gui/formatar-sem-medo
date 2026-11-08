@@ -302,6 +302,7 @@
     "3. Confirma que os teus saves estao na pasta Backup_... e revê a CHECKLIST.txt.",
     "4. Formata o PC e instala o Windows.",
     "5. Liga a pen e faz duplo clique em RESTAURAR.bat.",
+    "   Vai aparecer a lista dos teus programas: escolhe so os que queres reinstalar.",
     "6. Instala os jogos e corre o RESTAURAR.bat outra vez para os saves que dependem",
     "   da pasta do jogo ou da Steam.",
     "",

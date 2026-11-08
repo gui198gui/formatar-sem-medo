@@ -1,7 +1,7 @@
 #Requires -Version 5.1
 <#
   Formatar Sem Medo - RESTAURO
-  Repoe o que o backup copiou: redes Wi-Fi, programas (winget), extensoes do VS Code,
+  Repoe o que o backup copiou: redes Wi-Fi, os programas que escolheres (winget), extensoes do VS Code,
   pastas pessoais, definicoes de programas, saves de jogos, registo e drivers.
 
   So copia ficheiros para o PC. Nao apaga nada. Podes correr varias vezes
@@ -71,11 +71,37 @@ if ($wifiFiles.Count -gt 0 -and (Test-Command 'netsh') -and (Ask "Restaurar $($w
 $wingetFile = Join-Path $B 'programas\winget.json'
 if (Test-Path -LiteralPath $wingetFile) {
   if (Get-Command winget -ErrorAction SilentlyContinue) {
-    if (Ask "Reinstalar os programas com o winget? (pode demorar bastante)") {
-      Write-Step "A instalar programas (winget import)"
-      winget import -i "$wingetFile" --accept-package-agreements --accept-source-agreements --ignore-unavailable
-      # Atualiza o PATH para encontrar programas acabados de instalar (ex: VS Code)
-      $env:Path = [Environment]::GetEnvironmentVariable('Path', 'Machine') + ';' + [Environment]::GetEnvironmentVariable('Path', 'User')
+    $w = Get-Content -LiteralPath $wingetFile -Raw -Encoding UTF8 | ConvertFrom-Json
+    $pkgs = @(foreach ($src in $w.Sources) {
+      foreach ($p in $src.Packages) {
+        [pscustomobject]@{ Programa = $p.PackageIdentifier; Origem = $src.SourceDetails.Name }
+      }
+    }) | Sort-Object Programa
+    if ($pkgs.Count -gt 0 -and (Ask "Escolher programas para reinstalar ($($pkgs.Count) disponiveis)?")) {
+      $selected = @()
+      if (Get-Command Out-GridView -ErrorAction SilentlyContinue) {
+        Write-Host "    Vai abrir uma janela: seleciona SO os programas que queres (Ctrl+clique para varios) e carrega em OK." -ForegroundColor White
+        $selected = @($pkgs | Out-GridView -Title "Formatar Sem Medo - escolhe os programas a instalar (Ctrl+clique) e carrega em OK" -PassThru)
+      } else {
+        for ($i = 0; $i -lt $pkgs.Count; $i++) { Write-Host ("    [{0,3}] {1}" -f ($i + 1), $pkgs[$i].Programa) }
+        $answer = Read-Host "Numeros dos programas a instalar, separados por virgulas (ex: 1,4,7), 'todos' ou Enter para nenhum"
+        if ($answer -match '^\s*todos\s*$') { $selected = $pkgs }
+        else {
+          $selected = @($answer -split '[,; ]+' | Where-Object { $_ -match '^\d+$' } |
+            ForEach-Object { [int]$_ } | Where-Object { $_ -ge 1 -and $_ -le $pkgs.Count } |
+            Sort-Object -Unique | ForEach-Object { $pkgs[$_ - 1] })
+        }
+      }
+      if ($selected.Count -gt 0) {
+        Write-Step "A instalar $($selected.Count) programa(s)"
+        foreach ($p in $selected) {
+          Write-Host "    -> $($p.Programa)"
+          winget install --id $p.Programa --exact --source $p.Origem --accept-package-agreements --accept-source-agreements
+          if ($LASTEXITCODE -eq 0) { Write-Ok $p.Programa } else { Write-Warn2 "Nao foi possivel instalar $($p.Programa)" }
+        }
+        # Atualiza o PATH para encontrar programas acabados de instalar (ex: VS Code)
+        $env:Path = [Environment]::GetEnvironmentVariable('Path', 'Machine') + ';' + [Environment]::GetEnvironmentVariable('Path', 'User')
+      } else { Write-Skip "Nenhum programa escolhido" }
     }
   } else {
     Write-Warn2 "winget nao disponivel: instala a 'App Installer' da Microsoft Store e corre o restauro outra vez."
